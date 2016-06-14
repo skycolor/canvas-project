@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>canvas像素操作</title>
+		<style>
+			#main,#copy,.contain{margin: 15px;padding: 0;float: left;}
+			#main{cursor:move}
+			.contain *{
+				padding: 2px;
+				margin: 0;
+z			}
+			.contain a{
+				display: block;
+				text-align: center; 
+				margin-top:5px;
+				font-size:15px;
+				line-height: 20px;
+			}
+		</style>
+	</head>
+	<body>
+		<canvas id="main" width="400" height="300" style="display:block;border: 1px solid #AAA;">
+			亲，您的浏览器不支持canvas
+		</canvas>
+		<div class="contain" style="width: 290px;height: 300px;">
+			<div>
+				<span>缩放</span>
+				<input type="range" id="scaleChange" min="0.5" max="4.0" step="0.03" value="1.0" 
+					style="display:inline-block;width: 240px;"/>
+			</div>
+			<a href="javascript:void(0)" id="greyChange">灰度转换</a>
+			<a href="javascript:void(0)" id="blackChange">黑度转换</a>
+			<a href="javascript:void(0)" id="reverChange">反相转换</a>
+			<a href="javascript:void(0)" id="blurChange">模糊处理</a>
+			<a href="javascript:void(0)" id="mosaicChange">马赛克处理</a>
+			<a href="javascript:void(0)" id="downLoadImage">下载右侧图片</a>
+		</div>
+		<canvas id="copy" width="400" height="300" style="display:block;border: 1px solid #AAA;">
+			亲，您的浏览器不支持canvas
+		</canvas>
+		<canvas id="waterMark" style="display: none;">	
+		      亲，您的浏览器不支持canvas
+		      <!--
+		      		水印作图的canvas，把一个canvas载入另一个canvas的做法叫做，离屏canvas
+		      -->
+		</canvas>
+	</body>
+	<script>
+		document.body.onload = function(){
+			var canvas = document.getElementById("main"),
+				scaleChange = document.getElementById("scaleChange"),
+				copyCanvas = document.getElementById("copy"),
+				waterMarkCanvas = document.getElementById("waterMark"),
+				ctx = canvas.getContext("2d"),
+				copyCtx = copyCanvas.getContext("2d"),
+				canvasW = canvas.width,
+				canvasH = canvas.height;
+			var img = new Image();
+			img.src = "img/1.jpg";
+			img.onload = function(){		//当图片加载完毕后，执行canvas画图函数
+				init();
+			}
+			//用于初始化
+			function init(){
+				toolFunc.handleWaterMark();
+				toolFunc.handleScale();
+				toolFunc.drawImg();
+				toolFunc.handleEffect();
+				toolFunc.handleCanvasMove();
+			}
+			var toolFunc = {
+				scaleImgX : 0,
+				scaleImgY : 0,
+				drawImg : function(moveX , moveY){	//绘制图片
+					var scale = scaleChange.value;
+						//根据比例计算缩放后图像的大小
+						var imgW = canvasW*scale,
+							imgH = canvasH*scale,
+							x = (canvasW - imgW)/2,
+							y = (canvasH - imgH)/2,
+							tempX = x , tempY = y;
+						if(moveX || moveY){
+							x = this.scaleImgX + moveX;
+							y = this.scaleImgY + moveY;
+							if(x >= 0 || y >= 0 || x <= 2*tempX || y <= 2*tempY){
+								return;
+							}
+						}
+						ctx.clearRect(0 , 0 , canvasW , canvasH);
+						ctx.drawImage(img , x , y , imgW , imgH);
+						ctx.drawImage(waterMarkCanvas , 
+							canvasW - waterMarkCanvas.width ,
+							canvasH - waterMarkCanvas.height ,
+							waterMarkCanvas.width , waterMarkCanvas.height);
+						this.scaleImgX = x;
+						this.scaleImgY = y;
+				},
+				handleWaterMark : function(){		//用于处理水印
+					waterMarkCanvas.width = 200;
+					waterMarkCanvas.height = 70;
+					var waterCtx = waterMarkCanvas.getContext("2d");
+					waterCtx.font = "bold 20px Arial";
+					waterCtx.lineWidth = 1;
+					waterCtx.fillStyle = "white";
+					waterCtx.textAlign = "center";
+					waterCtx.textBaseline = "middle";
+					waterCtx.fillText( "~!~ sky ~!~" , 140 , 50 , waterMarkCanvas.width);
+				},
+				handleScale : function(){		//用于处理缩放
+					var isScale = false,
+						_this = this;
+					scaleChange.onmousedown = function(){
+						isScale = true;
+					}
+					scaleChange.onmousemove = function(){
+						if(isScale){		//画图
+							_this.drawImg();
+						}
+					}
+					scaleChange.onmouseup = function(){
+						isScale = false;
+					}
+				},
+				handleEffect : function(){	//处理效果变换
+					var imageData,pixelData;
+					document.getElementById("greyChange").onclick = function(){		//灰度变换
+						imageData = ctx.getImageData(0 , 0 , canvasW , canvasH);
+						pixelData = imageData.data;
+						for(var i = 0; i < canvasH*canvasW ; i++){
+							var r = pixelData[4*i + 0],
+								g = pixelData[4*i + 1],
+								b = pixelData[4*i + 2],
+								grey = r*0.3+g*0.59+b*0.11;//此为灰度图像的算法
+							pixelData[4*i + 0] = grey;
+							pixelData[4*i + 1] = grey;
+							pixelData[4*i + 2] = grey;
+						}
+						copyCtx.putImageData(imageData,0,0,0,0,canvasW,canvasH);
+					}
+					document.getElementById("blackChange").onclick = function(){		//黑度变换
+						imageData = ctx.getImageData(0 , 0 , canvasW , canvasH);
+						pixelData = imageData.data;
+						for(var i = 0; i < canvasH*canvasW ; i++){
+							var r = pixelData[4*i + 0],
+								g = pixelData[4*i + 1],
+								b = pixelData[4*i + 2],
+								grey = (function(n){		//黑度图像就只有黑白两色
+									if(n > 127){
+										return 255;
+									}else{
+										return 0;
+									}
+								})(r*0.3+g*0.59+b*0.11);
+							pixelData[4*i + 0] = grey;
+							pixelData[4*i + 1] = grey;
+							pixelData[4*i + 2] = grey;
+						}
+						copyCtx.putImageData(imageData,0,0,0,0,canvasW,canvasH);
+					}
+					document.getElementById("reverChange").onclick = function(){		//反向变换
+						imageData = ctx.getImageData(0 , 0 , canvasW , canvasH);
+						pixelData = imageData.data;
+						for(var i = 0; i < canvasH*canvasW ; i++){
+							var r = pixelData[4*i + 0],
+								g = pixelData[4*i + 1],
+								b = pixelData[4*i + 2];
+							pixelData[4*i + 0] = 255 - r;
+							pixelData[4*i + 1] = 255 - g;
+							pixelData[4*i + 2] = 255 - b;
+						}
+						copyCtx.putImageData(imageData,0,0,0,0,canvasW,canvasH);
+					}
+					document.getElementById("blurChange").onclick = function(){		//模糊处理
+						imageData = ctx.getImageData(0 , 0 , canvasW , canvasH);
+						pixelData = imageData.data;
+						var pixelTmpData = pixelData;	//作为一个备份数据
+						var r = 3 , totalNum = (2*r + 1)*(2*r + 1);	//去上下左右四个方向各3个像素点的平均值
+						for(var i = r ; i < canvasH - r ; i++){
+							for(var j = r ; j < canvasW - r; j++){
+								var totalR,totalG,totalB;
+								totalR = totalG = totalB = 0;
+								for(var m = -r ; m <= r ; m++){
+									for(var n = -r ; n <= r ; n++){
+										var pixeY = i + m , piexX = j + n,
+											pixe = canvasW*pixeY + piexX;
+										totalR += pixelTmpData[4*pixe + 0];
+										totalG += pixelTmpData[4*pixe + 1];
+										totalB += pixelTmpData[4*pixe + 2];
+									}
+								}
+								var p = i*canvasW + j;
+								pixelData[4*p + 0] = totalR/totalNum;
+								pixelData[4*p + 1] = totalG/totalNum;
+								pixelData[4*p + 2] = totalB/totalNum;
+							}
+						}
+						copyCtx.putImageData(imageData,0,0,0,0,canvasW,canvasH);
+					}
+					document.getElementById("mosaicChange").onclick = function(){	//马赛克处理
+						imageData = ctx.getImageData(0 , 0 , canvasW , canvasH);
+						pixelData = imageData.data;
+						var pixelTmpData = pixelData;	//作为一个备份数据
+						var size = 8,total = size*size;
+						for(var i = 0 ; i < canvasH ; i += size){
+							for( var j = 0 ; j < canvasW ; j += size){
+								var totalR,totalG,totalB;
+								totalR = totalG = totalB = 0;
+								for(var y = 0 ; y < size ; y++){
+									for(var x = 0 ; x < size ; x++){
+										var py = i + y,
+											px = j + x,
+											pixe = px + py*canvasW;
+										totalR += pixelTmpData[4*pixe + 0];
+										totalG += pixelTmpData[4*pixe + 1];
+										totalB += pixelTmpData[4*pixe + 2];
+									}
+								}
+								var newR = totalR/total,
+									newG = totalG/total,
+									newB = totalB/total;
+								for(var dy = 0 ; dy < size ; dy++){
+									for(var dx = 0 ; dx < size ; dx++ ){
+										var py = i + dy,
+											px = j + dx,
+											pixe = px + py*canvasW;
+										pixelData[4*pixe + 0] = newR;
+										pixelData[4*pixe + 1] = newG;
+										pixelData[4*pixe + 2] = newB;
+									}
+								}
+							}
+						}
+						copyCtx.putImageData(imageData,0,0,0,0,canvasW,canvasH);
+					}
+					document.getElementById("downLoadImage").onclick = function(){
+						var loadUrl =  copyCanvas.toDataURL("image/png").replace("image/png", "image/octet-stream");
+						window.location.href = loadUrl;
+					}
+				},
+				handleCanvasMove:function(){		//处理canvans移动
+					var isCanvasMove = false,
+						lastX,lastY;
+					canvas.onmousedown = function(e){
+						e.preventDefault();
+						isCanvasMove = true;
+						lastX = e.clientX - canvas.getBoundingClientRect().left;
+						lastY = e.clientY - canvas.getBoundingClientRect().top;
+					}
+					canvas.onmousemove = function(e){
+						e.preventDefault();
+						if(!isCanvasMove || scaleChange.value <= 1) return;
+						var x = e.clientX - canvas.getBoundingClientRect().left,
+							y = e.clientY - canvas.getBoundingClientRect().top;
+						var moveX = (x - lastX),
+							moveY = (y - lastY);
+						toolFunc.drawImg(moveX,moveY);
+						lastX = x;
+						lastY = y;
+					}
+					canvas.onmouseup = function(e){
+						e.preventDefault();
+						isCanvasMove = false;
+					}
+					canvas.onmouseout = function(e){
+						e.preventDefault();
+						isCanvasMove = false;
+					}
+				}
+			};
+		}
+	</script>
+</html>

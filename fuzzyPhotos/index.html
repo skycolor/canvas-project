@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+		<title>模糊照片</title>
+		<style>
+			*{padding: 0;margin: 0;}
+			html,body{width:100%;height: 100%;}
+			.container{position: relative;margin: 0 auto;width: 100%;height:100%;overflow: hidden;}
+			.container img{position:absolute;left: 0;top: 0;filter: blur(20px);-webkit-filter: blur(20px);z-index: 0;}
+			.container canvas{position: absolute;left: 0;top: 0;z-index: 1;}
+			.container .btn{position: absolute;z-index: 2;width: 70px;height: 28px;line-height: 28px;color: white;text-align: center;border-radius: 8px;font-size: 15px;}
+			.container #show{left: 50px;bottom: 30px;background-color: #F4371A;}
+			.container #refresh{right: 50px;bottom: 30px;background-color: #31A8ED;}
+		</style>
+	</head>
+	<body>
+		<div class="container" id="container">
+			<img id="pic" src="img/girl.jpg" />
+			<canvas id="canvas">浏览器不支持canvas</canvas>
+			<div class="btn" id="show">发红包</div>
+			<div class="btn" id="refresh">刷新</div>
+		</div>
+		<script>
+			(function(window, document, undefined){
+				"use strict"
+				var canvas = document.getElementById("canvas"),
+					pic = document.getElementById("pic"),
+					lastCenter, isShowing = false ,
+					clipArcR = Math.min(window.innerHeight , window.innerWidth)/15,
+					img = new Image() ,
+					imgSrc = "img/girl.jpg",
+					ctx = canvas.getContext("2d");
+				init(canvas , ctx);	
+				function init(canvas , ctx){		//初始化
+					initSize(canvas);
+					initCanvasShow(canvas , ctx);
+					bindEvent(canvas , ctx);
+				}
+				function initSize(canvas){		//初始化canvas大小
+					var windowW = window.innerWidth,
+						windowH = window.innerHeight;
+					canvas.width = windowW;
+					canvas.height = windowH;
+				}
+				function initCanvasShow(canvas , ctx){	//初始化canvas展现
+					img.src = imgSrc;
+					img.onload = function(){
+						pic.style.width = img.width;
+						pic.style.height = img.height;
+						pic.style.left = (canvas.width - img.width)/2 + "px";
+						lastCenter = {x : (canvas.width - 2*clipArcR)*Math.random() + clipArcR ,
+							y : (canvas.height - 2*clipArcR)*Math.random() + clipArcR};
+						drawClipRegion(canvas , ctx , clipArcR);
+					}
+				}
+				function drawClipRegion(canvas , ctx , r){		//绘制canvas剪辑区域
+					ctx.save();
+					ctx.beginPath();
+					ctx.arc(lastCenter.x , lastCenter.y , r , 0 , 2*Math.PI);
+					ctx.clip();
+					if(canvas.width > img.width){
+						ctx.drawImage(img , (canvas.width - img.width)/2 , 0 , img.width , img.height);
+					}else{
+						ctx.drawImage(img , 
+							(img.width - canvas.width)/2 , 0 , canvas.width , canvas.height ,
+							0 , 0 , canvas.width , canvas.height);
+					}
+					ctx.closePath();
+					ctx.restore();
+				}
+				function bindEvent(canvas , ctx){	//绑定点击事件
+					var show = document.getElementById("show"),
+						refresh = document.getElementById("refresh");
+					show.onclick = function(){
+						if(isShowing) return;
+						imgShow(canvas , ctx , show , refresh);
+					}
+					refresh.onclick = function(){
+						ctx.clearRect(0 , 0 , canvas.width , canvas.height);
+						lastCenter = {x : (canvas.width - 2*clipArcR)*Math.random() + clipArcR ,
+							y : (canvas.height - 2*clipArcR)*Math.random() + clipArcR};
+						drawClipRegion(canvas , ctx , clipArcR);
+					}
+				}
+				function imgShow(canvas , ctx , show , refresh){		//显示图像
+					var maxArcR = Math.max(window.innerWidth , window.innerHeight),
+						addParam = 45 , 
+						curArcR = clipArcR; 
+					isShowing = true;
+					var timer = setInterval(function(){
+						ctx.clearRect(0 , 0 , canvas.width , canvas.height);
+						if(curArcR >= maxArcR){
+							clearInterval(timer);
+							isShowing = false;
+							show.style.display = "none";
+							refresh.style.display = "none";
+						} 
+						curArcR += addParam;
+						ctx.clearRect(0 , 0 , canvas.width , canvas.height);
+						drawClipRegion(canvas , ctx , curArcR);
+					},40);
+				}
+			})(window, document);
+		</script>
+	</body>
+</html>

@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title>刮刮乐</title>
+		<style>
+			*{padding: 0;margin: 0;}
+			.container{position: relative;width: 500px;height: 400px;margin: 10px auto;background: url(img/april.jpg);background-size: 100% 100%;}
+			#canvas{position: absolute;top: 0;left: 0;width: 100%;height: 100%;}
+		</style>
+	</head>
+	<body>
+		<div class="container">
+			<canvas id="canvas">浏览器不支持canvas</canvas>
+		</div>
+		<script>
+			(function(window, document, undefined) {
+				"use strict"
+				var canvas = document.getElementById("canvas") ,
+					ctx = canvas.getContext("2d") , filteRadio = 30;
+				canvas.width = canvas.offsetWidth;
+				canvas.height = canvas.offsetHeight;
+				init();	
+				function init(){		//初始化
+					initShow();
+					bindEvent();
+				}
+				function initShow(){		//初始化canvas画布展示
+					ctx.beginPath();
+					ctx.fillStyle = "#1EE6E6";
+					ctx.fillRect(0 , 0 , canvas.width , canvas.height);
+					ctx.closePath();
+					ctx.globalCompositeOperation="destination-out";
+				}
+				function bindEvent(){
+					var canfilte = false;
+					canvas.onmousedown = function(e) {
+						canfilte = true;
+						doFifter(e.clientX, e.clientY);
+					}
+					canvas.onmouseup = function() {
+						canfilte = false;
+					}
+					canvas.onmousemove = function(e) {
+						if(!canfilte) return;
+						doFifter(e.clientX, e.clientY);
+					}
+					function doFifter(clientX , clientY){		//开始刮刮
+						var point = windowToCanvas(clientX , clientY , canvas.getBoundingClientRect());
+						ctx.beginPath();
+						ctx.fillStyle = "#fff";
+						ctx.arc(point.x , point.y , filteRadio , 0 , Math.PI*2);
+						ctx.fill();
+						ctx.closePath();
+					}
+				}
+				function windowToCanvas(x , y , cbox) { //window坐标转canvas坐标
+					return {
+						x: Math.round(x - cbox.left),
+						y: Math.round(y - cbox.top)
+					}
+				}
+			})(window, document)
+		</script>
+	</body>
+</html>

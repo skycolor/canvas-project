@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>canvas放大镜</title>
+		<style type="text/css">
+			*{margin: 0;padding: 0;}
+		</style>
+	</head>
+	<body>
+		<canvas id="main" width="800" height="600" 
+			style="display: block;margin: 0 auto;border: 1px solid #AAA;">
+			亲，您的浏览器不支持canvas
+		</canvas>
+		<canvas id="magnify" width="200" height="200" style="display: none;"></canvas>
+		<script>
+			var canvas = document.getElementById("main"),
+				ctx = canvas.getContext("2d"),
+				canvasW = canvas.width,
+				canvasH = canvas.height,
+				magnifyCanvas = document.getElementById("magnify"),
+				mCtx = magnifyCanvas.getContext("2d"),
+				magnifyR = 100;
+			var img = new Image();
+			img.src = "img/magnify.jpg";
+			img.onload = function(){
+				ctx.drawImage(this , 0 , 0 , canvasW , canvasH);
+				handleEvent();
+			}
+			function handleEvent(){
+				var isShow = false;
+				canvas.onmousedown = function(e){
+					e.preventDefault();
+					draw(e);
+				}
+				canvas.onmouseup = function(e){
+					e.preventDefault();
+					draw(e);
+				}
+				canvas.onmousemove = function(e){
+					e.preventDefault();
+					if(!isShow) return;
+					draw(e);
+				}
+				canvas.onmouseout = function(e){
+					e.preventDefault();
+					draw(e);
+				}
+				function draw(event){
+					isShow = (event.type == "mousedown" || event.type == "mousemove");
+					ctx.clearRect(0 , 0 , canvas.width , canvas.height);
+					ctx.drawImage(img , 0 , 0 , canvasW , canvasH);
+					if(!isShow) return;
+					var x = event.clientX - canvas.getBoundingClientRect().left,
+						y = event.clientY - canvas.getBoundingClientRect().top;
+					mCtx.save();
+					mCtx.lineWidth = 3;
+					mCtx.strokeStyle = "skyblue";
+					mCtx.beginPath();
+					mCtx.arc(100,100,90,0,Math.PI*2);
+					mCtx.stroke();
+					mCtx.clip();
+					mCtx.drawImage(img , 2*x - 90 , 2*y - 90 , 
+							180 , 180,
+							0 , 0 , magnifyCanvas.width, magnifyCanvas.height);
+					mCtx.closePath();
+					mCtx.restore();
+					ctx.drawImage(magnifyCanvas, (x-(magnifyCanvas.width/2)) , (y-(magnifyCanvas.height/2)) ,
+						magnifyCanvas.width , magnifyCanvas.height);
+				}
+			}
+		</script>
+	</body>
+</html>
