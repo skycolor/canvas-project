@@ -1,0 +1,14 @@
+body{background: #b6f6ff;}
+.container{margin: 8px 0 12px;}
+.wrapper{padding: 0 8px;}
+.wrapper .sub-wrapper{margin: 10px 0;}
+.wrapper .sub-wrapper .box{padding: 8px 4px;background: #6bd3fe;}
+.wrapper .sub-wrapper .box .box-sub{height: 80.4px;width: 270px;margin: 10px auto 20px;
+background-image: url(../img/guaBg.png);background-size: 100% 100%;position: relative;
+}
+.wrapper .sub-wrapper .box .box-sub .btn{position: absolute;left: 50%;bottom: 10px;
+width: 60%;transform: translateX(-50%);-webkit-transform: translateX(-50%);z-index: 99;
+}
+.wrapper .sub-wrapper .box .box-sub canvas{position: absolute;top: 0;left: 0;width: 100%;height: 100%;z-index: 10;}
+.wrapper .sub-wrapper .box .box-sub .boxTip{position: absolute;top: 0;left: 0;width: 100%;height: 100%;z-index: 5;
+line-height: 80.4px;text-align: center;color: #fe3f8f;font-size: 20px;}

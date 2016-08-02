@@ -10,6 +10,8 @@ scratchMusic 刮刮乐的效果，还待完善
 
 strokeWrite 仿照慕课网的一个老师做的一笔画游戏，同样支持移动和PC
 
+mobileScarp 移动项目使用的刮刮乐静态demo
+
 countDown 搜集的一些canvas倒计时效果
 
 

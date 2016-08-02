@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8" />
+		<title>刮刮乐</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+		<link rel="stylesheet" href="css/public.css" />
+		<link rel="stylesheet" href="css/main.css" />
+	</head>
+	<body>
+		<head>
+			<img src="img/banner.png" />
+		</head>
+		<section class="container">
+			<div class="wrapper">
+				<div class="sub-wrapper">
+					<div class="mainHeader">
+						<img src="img/mainHeader.jpg" />
+					</div>
+					<div class="box">
+						<div>
+							<img src="img/tip.png"/>
+						</div>
+						<div class="box-sub">
+							<div class="btn" id="start">
+								<img src="img/start.png" />
+							</div>
+							<canvas id="canvas"></canvas>
+							<div id="boxTip" class="boxTip">
+								
+							</div>
+						</div>
+					</div>
+				</div>
+				<div>
+					<img src="img/promotion.png" />
+				</div>
+			</div>
+		</section>
+		<footer>
+			<img src="img/footer.png" />
+		</footer>
+		<script type="text/javascript" src="js/zepto.min.js" ></script>
+		<script>
+			var canvas = document.getElementById("canvas") , ctx = canvas.getContext("2d");
+			canvas.width = $(canvas).width();
+			canvas.height = $(canvas).height();
+			var canvasW = canvas.width , canvasH = canvas.height;
+			var img = new Image();
+			var start = document.getElementById("start");
+			img.src = "img/gua.png"
+			img.onload = function(){
+				ctx.drawImage(this , 0 , 0 , this.width , this.height , 0 , 0 , canvas.width , canvas.height);
+				ctx.globalCompositeOperation = "destination-out";
+				init();
+			}
+			function init(){		//游戏开始
+				start.addEventListener('tap' , startEvent , false);
+				function startEvent(){
+					setTimeout(function(){
+						$(start).remove();
+						start.removeEventListener('tap' , startEvent , false);
+						gua();
+						$("#boxTip").text("中奖啦！");
+					} , 100)
+				}
+				function gua(){		//开始刮
+					var handleFunc = {
+						touchStart : function(e){
+							e.preventDefault();
+							doFifter(e.touches[0].pageX , e.touches[0].pageY);
+						} ,
+						touchMove : function(e){
+							e.preventDefault();
+							if(e.touches.length > 1 || e.scale && e.scale !== 1) return;
+    							doFifter(e.touches[0].pageX , e.touches[0].pageY);
+						} 
+					};
+					var filteRadio = Math.floor(canvas.height/6);
+					canvas.addEventListener("touchstart" , handleFunc.touchStart , false);
+					canvas.addEventListener("touchmove" , handleFunc.touchStart , false);
+					function doFifter(clientX , clientY){		//开始刮刮
+						var point = windowToCanvas(clientX , clientY , canvas.getBoundingClientRect());
+						if(point.x < 0 || point.y < 0 || point.x > canvas.width 
+							|| point.y > canvas.height) return;
+						ctx.beginPath();
+						ctx.fillStyle = "#000";
+						ctx.arc(point.x , point.y , filteRadio , 0 , Math.PI*2);
+						ctx.fill();
+						ctx.closePath();
+					}
+					function windowToCanvas(x, y , clientRect) { 		//window坐标转canvas坐标
+					    return {
+					        x: Math.round(x - clientRect.left - document.body.scrollLeft),
+					        y: Math.round(y - clientRect.top - document.body.scrollTop)
+					    }
+					}
+				}
+			}
+		</script>
+	</body>
+</html>
