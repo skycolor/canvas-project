@@ -14,4 +14,6 @@ mobileScarp 移动项目使用的刮刮乐静态demo
 
 countDown 搜集的一些canvas倒计时效果
 
+banner 使用canvas做出的一个banner切换图
+
 
