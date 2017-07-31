@@ -41,7 +41,9 @@
 			this.yNum = yNum;
 			this.img = img;
 		}
-		square.prototype.
+		square.prototype.draw = function(t){
+			
+		}
 			
 		
 		
