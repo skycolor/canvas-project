@@ -10,43 +10,90 @@
 
 	/*开始绘制*/
 	function startDraw(imgObjArr){
-		var canvas = document.getElementById("main") ,	size ,
-			ctx = canvas.getContext("2d") , imgObj = imgObjArr[0] , 
+		var canvas = document.getElementById("main") ,	canvasSquareSize , imgSquareSize , squareArr = [] ,
+			ctx = canvas.getContext("2d") , imgObj = imgObjArr[0] , squareNum = 30 ,
 			windowsWidth = document.body.offsetWidth;
 		
-		start();
+		var nextImgObj = imgObjArr[1];
 		
 		/*执行函数*/
 		function start(){
-			initCanvasDom();
-			draw();
+			initDomAndParam();
+			initShow();
 		}
 		
 		/*初始化canvas DOM 属性 以及 参数*/
 		function initDomAndParam(){
 			canvas.width = Math.round(0.85 * windowsWidth);
 			canvas.height = Math.round((imgObj.height * canvas.width) / imgObj.width);
-			size = Math.round(Math.min(canva.width , canvas.height)/20);
+			canvasSquareSize = Math.round(Math.max(canvas.width , canvas.height)/squareNum);
+			imgSquareSize = Math.round(Math.max(imgObj.width , imgObj.height)/squareNum);
+			for(var xIndex = 0 ; xIndex < Math.ceil(canvas.width/canvasSquareSize) ; xIndex++){
+				for(var yIndex = 0 ; yIndex < Math.ceil(canvas.height/canvasSquareSize) ; yIndex++){
+					squareArr.push(new Square(xIndex , yIndex , imgObj));
+				}
+			}
 		}
 		
-		/*绘制*/
-		function draw(){
-			ctx.drawImage(imgObj , 0 , 0 , imgObj.width , imgObj.height ,
-					0 , 0 , canvas.width , canvas.height);
+		/*绘制 初次显示的图片*/
+		function initShow(){
+			for(var i = 0 , item ; item = squareArr[i++];){
+				item.drawImg(ctx);
+			}
 		}
 		
-		/*绘制正方形*/
-		function square(xNum , yNum , img){
-			this.xNum = xNum;
-			this.yNum = yNum;
+		/*图片切换  img 图片对象 startPos 切换的启示位置*/
+		function switchImg(newImg , startPos , squareArr){
+			var distance = 0;
+			var timer = setInterval(function(){
+				var switchSquareArr = getSquaresByDistance(distance , startPos , squareArr);
+				if(switchSquareArr.length == 0){
+					clearInterval(timer);
+					return;
+				}
+				for(var i = 0 , square ; square = switchSquareArr[i++];){
+					square.clearImg(ctx);
+					square.setImg(newImg);
+					square.drawImg(ctx);
+				}
+				distance++;
+			} , 20);
+		}
+		
+		/*根据距离获取对象数组*/
+		function getSquaresByDistance(distance , startPos , squareArr){
+			var retArr = [] , startX = startPos.x , startY = startPos.y;
+			for(var index = 0 , square ; square = squareArr[index++]; ){
+				if((Math.abs(startX - square.xIndex) + Math.abs(startY - square.yIndex)) == distance){
+					retArr.push(square);
+				}
+			}
+			return retArr;
+		}
+		
+		/*正方形对象*/
+		function Square(xIndex , yIndex , img){
+			this.xIndex = xIndex;
+			this.yIndex = yIndex;
 			this.img = img;
 		}
-		square.prototype.draw = function(t){
-			
+		Square.prototype.setImg = function(newImg){		//设置新图片
+			this.img = newImg;
 		}
-			
+		Square.prototype.drawImg = function(ctx){		//绘制方法
+			ctx.beginPath();
+			ctx.drawImage(this.img , this.xIndex*imgSquareSize , this.yIndex*imgSquareSize , imgSquareSize , imgSquareSize ,
+					this.xIndex*canvasSquareSize , this.yIndex*canvasSquareSize , canvasSquareSize , canvasSquareSize);
+			ctx.closePath();
+		}
+		Square.prototype.clearImg = function(ctx){			//清空正方形内的图片
+			ctx.clearRect(this.xIndex*canvasSquareSize , this.yIndex*canvasSquareSize , canvasSquareSize , canvasSquareSize);
+		}
 		
-		
+		start();
+		setTimeout(function(){
+			switchImg(nextImgObj , {x : 18 , y : 13} , squareArr)
+		} , 5000);
 		
 	}
 
