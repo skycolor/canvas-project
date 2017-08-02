@@ -10,8 +10,8 @@
 
 	/*开始绘制*/
 	function startDraw(imgObjArr){
-		var canvas = document.getElementById("main") ,	canvasSquareSize , imgSquareSize , squareArr = [] ,
-			ctx = canvas.getContext("2d") , imgObj = imgObjArr[0] , squareNum = 30 ,
+		var canvas = document.getElementById("main") ,	canvasSquareSize , imgSquareSize , squareArr = [] , zIndex = 0 , isAuto = true , 
+			ctx = canvas.getContext("2d") , imgObj = imgObjArr[0] , squareNum = 30 , autoTimer , autoSpeed = 4000 ,
 			windowsWidth = document.body.offsetWidth;
 		
 		var nextImgObj = imgObjArr[1];
@@ -20,6 +20,14 @@
 		function start(){
 			initDomAndParam();
 			initShow();
+			autoSwitch();
+			canvas.addEventListener("click" , hanleClickEvent , false);
+			window.onblur = function(){
+				if(autoTimer) clearInterval(autoTimer);
+			}
+			window.onfocus = function(){
+				autoSwitch();
+			}
 		}
 		
 		/*初始化canvas DOM 属性 以及 参数*/
@@ -42,13 +50,49 @@
 			}
 		}
 		
+		/*自动轮播*/
+		function autoSwitch(){
+			if(!isAuto) return;
+			var centerPos = {			//页面中心点
+				x : Math.round(Math.ceil(canvas.width/canvasSquareSize)/2) , 
+				y : Math.round(Math.ceil(canvas.height/canvasSquareSize)/2),
+			} , autoFunc = function(){
+				zIndex = (zIndex + 1)%imgObjArr.length;
+				switchImg(imgObjArr[zIndex] , centerPos , squareArr , "auto");
+			}
+			autoTimer = setInterval(autoFunc , autoSpeed);
+		}
+		
+		/*处理点击事件*/
+		function hanleClickEvent(e){
+			zIndex = (zIndex + 1)%imgObjArr.length;
+			switchImg(imgObjArr[zIndex] , getPos(windowToCanvas(e.clientX, e.clientY)) , squareArr , "click");
+			
+			function windowToCanvas(x, y) { //window坐标转canvas坐标
+			    return {
+			        x: Math.round(x - canvas.getBoundingClientRect().left - document.body.scrollLeft),
+			        y: Math.round(y - canvas.getBoundingClientRect().top - document.body.scrollTop)
+			    }
+			}
+			function getPos(obj){
+				return {
+					x : Math.round(obj.x / canvasSquareSize) , 
+					y : Math.round(obj.y / canvasSquareSize)
+				}
+			}
+		}
+		
 		/*图片切换  img 图片对象 startPos 切换的启示位置*/
-		function switchImg(newImg , startPos , squareArr){
+		function switchImg(newImg , startPos , squareArr , type){
+			if(type == "click") clearInterval(autoTimer);
+			canvas.removeEventListener("click" , hanleClickEvent , false);
 			var distance = 0;
 			var timer = setInterval(function(){
 				var switchSquareArr = getSquaresByDistance(distance , startPos , squareArr);
 				if(switchSquareArr.length == 0){
 					clearInterval(timer);
+					canvas.addEventListener("click" , hanleClickEvent , false);
+					if(type == "click") autoSwitch();
 					return;
 				}
 				for(var i = 0 , square ; square = switchSquareArr[i++];){
@@ -91,10 +135,6 @@
 		}
 		
 		start();
-		setTimeout(function(){
-			switchImg(nextImgObj , {x : 18 , y : 13} , squareArr)
-		} , 5000);
-		
 	}
 
 	/*图片加载方法*/
@@ -118,6 +158,4 @@
 			}
 		}
 	}
-
-
 })(document)
