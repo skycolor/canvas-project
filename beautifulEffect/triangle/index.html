@@ -3,6 +3,7 @@
 
 	<head>
 		<meta charset="UTF-8">
+		 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 		<title>纯canvas 编写的三角线条</title>
 		<style>
 			html,
@@ -38,12 +39,11 @@
 				r = 0,
 				u = m.PI * 2,
 				v = m.cos,
-				z = m.random
-			c.width = w * pr
-			c.height = h * pr
-			x.scale(pr, pr)
+				z = m.random;
+			c.width = w 
+			c.height = h 
 			x.globalAlpha = 0.6
-
+			
 			function i() {
 				x.clearRect(0, 0, w, h)
 				q = [{
