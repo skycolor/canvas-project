@@ -18,4 +18,5 @@ canvasMagicWand 使用canvas制作的一个魔法棒效果
 
 banner 使用canvas做出的一个banner切换图
 
+beautifulEffect 记录一些美丽的canvas效果，可以用作个人网页中
 
