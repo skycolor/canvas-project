@@ -18,7 +18,7 @@ var canvas = document.getElementById("canvas"),
 	angleZ = 0,
 	mouseX = 0,
 	mouseY = 0,
-	endData = new Date(2016,06,15,23,59,59);
+	endData = new Date(2017,11,30,23,59,59);
 
 var settings = {
 	MouseRotation: false,
