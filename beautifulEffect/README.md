@@ -11,3 +11,5 @@
 一个用canvas仿造知乎制作的粒子和线条的特效
 ![Image text](https://raw.githubusercontent.com/skycolor/canvas-project/master/beautifulEffect/zhihu/img/show.gif)
 
+###particleSky
+一个比较一般的粒子星空，其实和上面的类似

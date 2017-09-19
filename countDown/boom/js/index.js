@@ -18,7 +18,11 @@ var canvas = document.getElementById("canvas"),
 	angleZ = 0,
 	mouseX = 0,
 	mouseY = 0,
-	endData = new Date(2017,11,30,23,59,59);
+	endData = (function(){
+		var retDate = new Date();
+		retDate.setDate(retDate.getDate()+2);
+		return retDate;
+	})();
 
 var settings = {
 	MouseRotation: false,
