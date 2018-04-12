@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title>彩带背景</title>
+		<link rel="stylesheet" href="css/public.css" />
+	</head>
+	<body>
+		<script src="https://cdn.bootcss.com/zepto/1.2.0/zepto.min.js" type="application/javascript"></script>
+		<script src="lib/effect.js" type="application/javascript"></script>
+		<script>
+			canvasEffect({
+				type : 'band' ,
+				particleMax : 300 ,
+				particleCount : 100 ,
+				o : 0.7 ,
+				oFloat : 0.2 ,
+				vy : 0.8 ,
+				vyFloat : 0.2 ,
+				vx : 0.3 ,
+				vxFloat : 0.6
+			});
+		</script>
+	</body>
+</html>
