@@ -55,11 +55,11 @@
 				init();
 			}
 			function init(){		//游戏开始
-				start.addEventListener('tap' , startEvent , false);
+				start.addEventListener('click' , startEvent , false);
 				function startEvent(){
 					setTimeout(function(){
 						$(start).remove();
-						start.removeEventListener('tap' , startEvent , false);
+						start.removeEventListener('click' , startEvent , false);
 						gua();
 						$("#boxTip").text("中奖啦！");
 					} , 100)
