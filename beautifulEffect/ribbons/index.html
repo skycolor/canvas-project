@@ -151,6 +151,7 @@
 
 				// 构造
 				var Factory = function(options) {
+					this._isDestroyed = false;		//是否被销毁
 					this._canvas = null;
 					this._context = null;
 					this._sto = null;
@@ -186,6 +187,7 @@
 					this._onScroll = this._onScroll.bind(this);
 					this.setOptions(options);
 					this.init();
+					return this;
 				};
 				Factory.prototype = {
 					constructor: Factory,
@@ -259,7 +261,6 @@
 							point3 = null,
 							color = Math.round(random(0, 360)),
 							delay = 0;
-						// buils ribbon sections
 						while(true) {
 							if(stop <= 0) break;
 							stop--;
@@ -344,9 +345,9 @@
 						}
 						return false; 
 					},
-
 					// 绘制
 					_onDraw: function() {
+						if(this._isDestroyed) return
 						// 在丝带列表上清理已完成的丝带
 						for(var i = 0, t = this._ribbons.length; i < t; ++i) {
 							if(!this._ribbons[i]) {
@@ -381,27 +382,31 @@
 						// 动画
 						requestAnimationFrame(this._onDraw);
 					},
-
 					// 当页面尺寸发生变化时触发
 					_onResize: function(e) {
 						var screen = screenInfo(e);
 						this._width = screen.width;
 						this._height = screen.height;
-
 						if(this._canvas) {
 							this._canvas.width = this._width;
 							this._canvas.height = this._height;
-
 							if(this._context) {
 								this._context.globalAlpha = this._options.colorAlpha;
 							}
 						}
 					},
-
 					// 页面滚动时触发
 					_onScroll: function(e) {
 						var screen = screenInfo(e);
 						this._scroll = screen.scrolly;
+					},
+					// 销毁
+					_destory: function(){
+						this._isDestroyed = true
+						window.removeEventListener("resize", this._onResize);
+						window.removeEventListener("scroll", this._onScroll);
+						document.body.removeChild(this._canvas);
+						
 					}
 				};
 				// 导出工厂类
