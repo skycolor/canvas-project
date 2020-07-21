@@ -21,42 +21,37 @@
 <body>
     <canvas id="mycanvas" width="1000" height="600"></canvas>
     <script type="text/javascript">
-
-        var mycanvas = document.getElementById("mycanvas");
-        var ctx = mycanvas.getContext("2d");
         //圆形类
-         function Circle(x,y,r,color){
+         function Circle(x,y){
             this.x = x;
             this.y = y;
-            this.r = r;
+            this.r = Math.random()*10 + 10;
+            this.v = Math.random()
+            this.step = 60
             // 颜色的取值范围
-            this.color = "rgb("+ (parseInt(Math.random() * 240 ) + 9) + ","+ (parseInt(Math.random() * 220 )+18) +",203)";
-
+            this.color = colors[Math.floor((Math.random()*colors.length))]
             //随机方向
-            this.dx = Math.random() * 12 - 7;
-            this.dy = Math.random() * 12 - 7;
-            //往数组中push自己
-            circleArr.push(this);
+            this.dx = Math.random() * 7 - 3.5;
+            this.dy = Math.random() * 7 - 3.5;
          }
-
          //渲染
          Circle.prototype.render = function(){
-            //新建一条路径
             ctx.beginPath();
             //创建一个圆
             ctx.arc(this.x, this.y, this.r, 0, Math.PI*2, true);
             //设置样式颜色
-            ctx.fillStyle = this.color;
+            ctx.strokeStyle = this.color;
             //通过填充路径的内容区域生成实心的图形
-            ctx.fill();
+            ctx.stroke();
+            ctx.closePath();
          }
-
          //更新
          Circle.prototype.update = function(){
             this.x += this.dx;
             this.y += this.dy;
-            this.r--;
-            if(this.r < 0){
+            this.r -= this.v;
+            this.step --
+            if(this.step <= 0 || this.r <= 0){
                 for (var i = 0; i < circleArr.length; i++) {
                     if (circleArr[i] === this) {
                         circleArr.splice(i,1);
@@ -66,23 +61,25 @@
             }
             return true;
          }
-         //创建一个数组
-         var circleArr = [];
-
+         let mycanvas = document.getElementById("mycanvas");
+         let ctx = mycanvas.getContext("2d");
+         let colors = ['#FFE300','#FF7494','#00E6FF','#89FF47'];
+         let circleArr = [];
          //鼠标移动事件
-         mycanvas.onmousemove = function(event){
-            new Circle(event.clientX,event.clientY,30,"orange");
-         }
-
-         //设置定时器每20毫秒更新和渲染
-         setInterval(function(){
-            ctx.clearRect(0, 0, 1000, 600)
+         window.onmousemove = function(event){
+		    circleArr.push(new Circle(event.clientX, event.clientY)) 
+		 }
+		 window.requestAnimationFrame = window.requestAnimationFrame || window.mozRequestAnimationFrame ||
+	window.webkitRequestAnimationFrame || window.msRequestAnimationFrame;
+		 function draw(){
+		 	ctx.clearRect(0, 0, 1000, 600)
             for (var i = 0; i < circleArr.length; i++) {
                 circleArr[i].update() && circleArr[i].render();
             };
-         },20);
-
-
+            requestAnimationFrame(draw)
+		 }
+		 draw()
+         
     </script>
 </body>
 </html>
